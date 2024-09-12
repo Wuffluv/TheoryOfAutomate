@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.Drawing;
 
 namespace _1lab
@@ -12,9 +7,17 @@ namespace _1lab
     {
         public PointF Position { get; private set; }
 
+        private static Random random = new Random();
+
         public Home(PointF position)
         {
             Position = position;
+        }
+
+        // Устанавливаем новую случайную позицию дома
+        public void SetRandomPosition()
+        {
+            Position = new PointF(random.Next(20, 400), random.Next(20, 400)); // Задаём границы формы
         }
     }
 }
