@@ -7,16 +7,17 @@ namespace _1lab
     {
         public PointF Position { get; private set; }
 
+        private static Random random = new Random();
+
         public Leaf(PointF position)
         {
             Position = position;
         }
 
-        // Устанавливаем случайную позицию для листа
+        // Устанавливаем новую случайную позицию
         public void SetRandomPosition()
         {
-            Random random = new Random();
-            Position = new PointF(random.Next(50, 400), random.Next(50, 400)); // Случайные координаты в пределах формы
+            Position = new PointF(random.Next(20, 400), random.Next(20, 400)); // Задаём границы формы
         }
     }
 }

@@ -10,7 +10,7 @@ namespace _1lab
         public FSM brain;
 
         private const float MOUSE_THREAT_RADIUS = 50;
-        private const float SPEED = 2.0f; // Базовая скорость муравья
+        private const float SPEED = 1.0f; // Уменьшенная базовая скорость муравья
 
         public Ant(float posX, float posY)
         {
@@ -23,10 +23,7 @@ namespace _1lab
         // Метод нахождения листа
         public void FindLeaf()
         {
-            velocity = new PointF(Form1.Instance.Leaf.Position.X - position.X,
-                                  Form1.Instance.Leaf.Position.Y - position.Y);
-
-            NormalizeVelocity(); // Нормализация скорости
+            SetVelocityTowards(Form1.Instance.Leaf.Position);
 
             // Если муравей достиг листа
             if (Distance(Form1.Instance.Leaf.Position, position) <= 10)
@@ -46,29 +43,30 @@ namespace _1lab
         // Метод возвращения домой
         public void GoHome()
         {
-            velocity = new PointF(Form1.Instance.Home.Position.X - position.X,
-                                  Form1.Instance.Home.Position.Y - position.Y);
-
-            NormalizeVelocity(); // Нормализация скорости
+            SetVelocityTowards(Form1.Instance.Home.Position);
 
             // Если муравей достиг дома
             if (Distance(Form1.Instance.Home.Position, position) <= 10)
             {
                 brain.SetState(FindLeaf);
             }
+
+            // Проверяем, если мышь в радиусе угрозы
+            if (Distance(Form1.Instance.Mouse.Position, position) <= MOUSE_THREAT_RADIUS)
+            {
+                brain.SetState(RunAway);
+            }
         }
 
         // Метод убегания от мыши
         public void RunAway()
         {
-            velocity = new PointF(position.X - Form1.Instance.Mouse.Position.X,
-                                  position.Y - Form1.Instance.Mouse.Position.Y);
+            SetVelocityAwayFrom(Form1.Instance.Mouse.Position);
 
-            NormalizeVelocity(); // Нормализация скорости
-
-            // Если мышь больше не в зоне угрозы, возвращаемся к поиску листа
+            // Если мышь больше не в зоне угрозы
             if (Distance(Form1.Instance.Mouse.Position, position) > MOUSE_THREAT_RADIUS)
             {
+                // Вернёмся к поиску листа или движению домой, в зависимости от предыдущего состояния
                 brain.SetState(FindLeaf);
             }
         }
@@ -88,6 +86,20 @@ namespace _1lab
         }
 
         // Нормализация вектора скорости, чтобы муравей двигался с постоянной скоростью
+        private void SetVelocityTowards(PointF target)
+        {
+            velocity = new PointF(target.X - position.X, target.Y - position.Y);
+            NormalizeVelocity();
+        }
+
+        // Убегание от мыши
+        private void SetVelocityAwayFrom(PointF target)
+        {
+            velocity = new PointF(position.X - target.X, position.Y - target.Y);
+            NormalizeVelocity();
+        }
+
+        // Нормализация вектора скорости
         private void NormalizeVelocity()
         {
             float length = Distance(new PointF(0, 0), velocity);
