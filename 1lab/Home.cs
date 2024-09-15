@@ -14,10 +14,6 @@ namespace _1lab
             Position = position;
         }
 
-        // Устанавливаем новую случайную позицию дома
-        public void SetRandomPosition()
-        {
-            Position = new PointF(random.Next(20, 400), random.Next(20, 400)); // Задаём границы формы
-        }
+        
     }
 }
