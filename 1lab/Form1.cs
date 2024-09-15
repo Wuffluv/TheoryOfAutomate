@@ -19,7 +19,10 @@ namespace _1lab
             InitializeComponent();
             Instance = this;
 
-            // Инициализируем объекты Leaf, Home и Mouse
+            // Включаем двойную буферизацию для предотвращения мерцания
+            this.DoubleBuffered = true;
+
+            // Инициализируем объекты Leaf (лист), Home (домик) и Mouse (мышь)
             Leaf = new Leaf(new PointF(100, 100));
             Home = new Home(new PointF(200, 200));
             Mouse = new Mouse(new PointF(300, 300));
@@ -27,31 +30,31 @@ namespace _1lab
             // Инициализируем муравья
             ant = new Ant(50, 50);
 
-            // Настраиваем таймер
+            // Настраиваем таймер для обновления положения муравья и перерисовки экрана
             timer = new Timer();
-            timer.Interval = 25; // Каждые 50 мс
+            timer.Interval = 25; // Интервал обновления 25 мс
             timer.Tick += Timer_Tick;
             timer.Start();
         }
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            // Обновляем положение муравья
+            // Обновляем состояние муравья (его положение и логику)
             ant.Update();
-            // Перерисовываем форму
+            // Перерисовываем форму (OnPaint)
             this.Invalidate();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // Ускорение муравья
+            // Увеличение скорости муравья
             SpeedMultiplier = Math.Min(3.0f, SpeedMultiplier + 0.5f);
             label1.Text = "Speed: " + SpeedMultiplier;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            // Замедление муравья
+            // Уменьшение скорости муравья
             SpeedMultiplier = Math.Max(0.5f, SpeedMultiplier - 0.5f);
             label1.Text = "Speed: " + SpeedMultiplier;
         }
@@ -69,16 +72,17 @@ namespace _1lab
 
             Graphics g = e.Graphics;
 
-            // Рисуем листочек
+            // Рисуем лист (leaf)
             DrawLeaf(g, Leaf.Position);
 
-            // Рисуем домик
+            // Рисуем домик (home)
             DrawHome(g, Home.Position);
 
-            // Рисуем муравья (3 части тела и 6 ножек)
+            // Рисуем муравья (состоит из 3 частей тела и 6 ножек)
             DrawAnt(g, ant.position);
         }
 
+        // Метод для рисования домика
         private void DrawHome(Graphics g, PointF position)
         {
             // Размеры домика
@@ -92,10 +96,10 @@ namespace _1lab
             // Рисуем крышу домика (треугольник)
             PointF[] roofPoints =
             {
-        new PointF(position.X - houseWidth / 2, position.Y - houseHeight / 2),  // Левый угол крыши
-        new PointF(position.X + houseWidth / 2, position.Y - houseHeight / 2),  // Правый угол крыши
-        new PointF(position.X, position.Y - houseHeight)  // Верхушка крыши
-    };
+                new PointF(position.X - houseWidth / 2, position.Y - houseHeight / 2),  // Левый угол крыши
+                new PointF(position.X + houseWidth / 2, position.Y - houseHeight / 2),  // Правый угол крыши
+                new PointF(position.X, position.Y - houseHeight)  // Верхушка крыши
+            };
             g.FillPolygon(Brushes.DarkRed, roofPoints);
 
             // Рисуем дверь домика
@@ -104,6 +108,7 @@ namespace _1lab
             g.FillRectangle(Brushes.Black, position.X - doorWidth / 2, position.Y, doorWidth, doorHeight);
         }
 
+        // Метод для рисования листа
         private void DrawLeaf(Graphics g, PointF position)
         {
             // Размеры листа
@@ -123,9 +128,10 @@ namespace _1lab
             g.DrawLine(Pens.DarkGreen, position.X, position.Y, position.X + leafWidth / 4, position.Y + leafHeight / 4);
         }
 
+        // Метод для рисования муравья
         private void DrawAnt(Graphics g, PointF position)
         {
-            // Размеры муравья
+            // Размеры частей тела муравья
             float bodyWidth = 20;
             float bodyHeight = 10;
 
@@ -134,7 +140,7 @@ namespace _1lab
             PointF thorax = new PointF(position.X + bodyWidth / 2, position.Y);
             PointF abdomen = new PointF(position.X + bodyWidth, position.Y);
 
-            // Рисуем тело (голова, грудь и брюшко)
+            // Рисуем тело муравья (голова, грудь и брюшко)
             g.FillEllipse(Brushes.Black, head.X - 5, head.Y - 5, 10, 10); // Голова
             g.FillEllipse(Brushes.Black, thorax.X - 5, thorax.Y - 5, 12, 12); // Грудь
             g.FillEllipse(Brushes.Black, abdomen.X - 5, abdomen.Y - 5, 14, 14); // Брюшко
@@ -147,6 +153,7 @@ namespace _1lab
             DrawLegs(g, thorax);
         }
 
+        // Метод для рисования ножек муравья
         private void DrawLegs(Graphics g, PointF thorax)
         {
             // Длина ножек
