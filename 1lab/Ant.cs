@@ -9,8 +9,8 @@ namespace _1lab
         public PointF velocity;  // Скорость муравья (вектор направления движения)
         public FSM brain;        // Состояние муравья (автомат состояний)
 
-        private const float MOUSE_THREAT_RADIUS = 50;  // Радиус, в котором муравей боится мыши
-        private const float SPEED = 2.0f;  // Базовая скорость муравья
+        private const float MOUSE_THREAT_RADIUS = 100;  // Радиус, в котором муравей боится мыши
+        private const float SPEED = 3.0f;  // Базовая скорость муравья
 
         public Ant(float posX, float posY)
         {
