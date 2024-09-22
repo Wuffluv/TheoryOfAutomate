@@ -111,6 +111,11 @@ namespace HockeyGame
             this.Close();
         }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ResetGame();
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
