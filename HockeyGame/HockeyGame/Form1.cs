@@ -1,56 +1,56 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace HockeyGame
 {
+    // Главная форма приложения
     public partial class Form1 : Form
     {
-        private Timer gameTimer;
-        private Puck puck;
-        private Athlete[] athletes;
-        private int redScore = 0;
-        private int blueScore = 0;
-        private Rectangle leftGoal, rightGoal;
-        private Random random = new Random();
-
+        private Timer gameTimer; // Таймер для обновления игры
+        private Puck puck; // Объект шайбы
+        private Athlete[] athletes; // Массив хоккеистов
+        private int redScore = 0; // Счет команды красных
+        private int blueScore = 0; // Счет команды синих
+        private Rectangle leftGoal, rightGoal; // Прямоугольники, представляющие ворота
+        private Random random = new Random(); // Генератор случайных чисел
 
         public Form1()
         {
             InitializeComponent();
-            InitializeGame();
+            InitializeGame(); // Инициализация игры
         }
-
-
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-
+            // Этот метод может использоваться для дополнительной отрисовки, если потребуется
         }
 
         private void InitializeGame()
         {
             // Включаем двойную буферизацию для предотвращения мерцания
             this.DoubleBuffered = true;
+
             // Задаем размеры и положение ворот
-            leftGoal = new Rectangle(20, this.ClientSize.Height / 2 - 50, 10, 100);
-            rightGoal = new Rectangle(this.ClientSize.Width - 30, this.ClientSize.Height / 2 - 50, 10, 100);
+            leftGoal = new Rectangle(20, this.ClientSize.Height / 2 - 50, 10, 100); // Левые ворота
+            rightGoal = new Rectangle(this.ClientSize.Width - 30, this.ClientSize.Height / 2 - 50, 10, 100); // Правые ворота
 
             // Создаем шайбу и хоккеистов
-            puck = new Puck(this.ClientSize.Width / 2, this.ClientSize.Height / 2, random);
+            puck = new Puck(this.ClientSize.Width / 2, this.ClientSize.Height / 2, random); // Создаем шайбу в центре поля
             athletes = new Athlete[]
             {
-                new Athlete(100, 100, Color.Red, rightGoal),
-                new Athlete(this.ClientSize.Width - 100, 100, Color.Blue, leftGoal),
-                new Athlete(100, this.ClientSize.Height - 100, Color.Red, rightGoal),
-                new Athlete(this.ClientSize.Width - 100, this.ClientSize.Height - 100, Color.Blue, leftGoal)
+                new Athlete(100, 100, Color.Red, rightGoal), // Хоккеист красной команды
+                new Athlete(this.ClientSize.Width - 100, 100, Color.Blue, leftGoal), // Хоккеист синей команды
+                new Athlete(100, this.ClientSize.Height - 100, Color.Red, rightGoal), // Еще один хоккеист красной команды
+                new Athlete(this.ClientSize.Width - 100, this.ClientSize.Height - 100, Color.Blue, leftGoal) // Еще один хоккеист синей команды
             };
 
             // Инициализируем таймер игры
             gameTimer = new Timer();
-            gameTimer.Interval = 16; // примерно 60 кадров в секунду
-            gameTimer.Tick += GameTimer_Tick;
-            gameTimer.Start();
+            gameTimer.Interval = 10; // Интервал обновления (примерно 100 кадров в секунду)
+            gameTimer.Tick += GameTimer_Tick; // Привязываем обработчик события
+            gameTimer.Start(); // Запускаем таймер
         }
 
         private void GameTimer_Tick(object sender, EventArgs e)
@@ -62,7 +62,7 @@ namespace HockeyGame
             }
             puck.Update(this.ClientSize);
 
-            // Проверка на гол
+            // Проверяем, был ли забит гол
             CheckGoal();
 
             // Перерисовываем поле
@@ -71,7 +71,7 @@ namespace HockeyGame
 
         private void CheckGoal()
         {
-            // Создаем прямоугольник, представляющий шайбу
+            // Создаем прямоугольник, представляющий шайбу для проверки столкновений
             RectangleF puckRect = new RectangleF(
                 puck.Position.X - puck.Radius,
                 puck.Position.Y - puck.Radius,
@@ -81,24 +81,24 @@ namespace HockeyGame
             // Проверяем пересечение шайбы с левыми воротами (гол для синих)
             if (puckRect.IntersectsWith(leftGoal))
             {
-                blueScore++;
-                ResetGame();
+                blueScore++; // Увеличиваем счет синих
+                ResetGame(); // Сбрасываем игру
             }
             // Проверяем пересечение шайбы с правыми воротами (гол для красных)
             else if (puckRect.IntersectsWith(rightGoal))
             {
-                redScore++;
-                ResetGame();
+                redScore++; // Увеличиваем счет красных
+                ResetGame(); // Сбрасываем игру
             }
         }
 
         private void ResetGame()
         {
-            // Возвращаем шайбу на центр и сбрасываем состояние
+            // Возвращаем шайбу на центр и сбрасываем ее состояние
             puck = new Puck(this.ClientSize.Width / 2, this.ClientSize.Height / 2, random);
             puck.Possessor = null;
 
-            // Сбрасываем состояние хоккеистов
+            // Сбрасываем состояние всех хоккеистов
             foreach (var athlete in athletes)
             {
                 athlete.Reset();
@@ -107,6 +107,7 @@ namespace HockeyGame
 
         private void button1_Click(object sender, EventArgs e)
         {
+            // Закрываем форму при нажатии на кнопку
             this.Close();
         }
 
@@ -127,7 +128,7 @@ namespace HockeyGame
             e.Graphics.FillRectangle(Brushes.White, leftGoal);
             e.Graphics.FillRectangle(Brushes.White, rightGoal);
 
-            // Отображаем счёт
+            // Отображаем текущий счет
             using (Font font = new Font("Arial", 16))
             {
                 e.Graphics.DrawString($"Red: {redScore}  Blue: {blueScore}", font, Brushes.Black, this.ClientSize.Width / 2 - 50, 20);
@@ -135,39 +136,40 @@ namespace HockeyGame
         }
     }
 
+    // Класс, представляющий шайбу
     public class Puck
     {
-        public PointF Position { get; set; }
-        public float Radius { get; private set; } = 10;
-        public PointF Velocity { get; private set; }
-        private Random random;
-
-        public Athlete Possessor { get; set; }
+        public PointF Position { get; set; } // Позиция шайбы
+        public float Radius { get; private set; } = 10; // Радиус шайбы
+        public PointF Velocity { get; private set; } // Скорость шайбы
+        private Random random; // Генератор случайных чисел для направления
+        public Athlete Possessor { get; set; } // Хоккеист, владеющий шайбой
 
         public Puck(float x, float y, Random random)
         {
-            Position = new PointF(x, y);
+            Position = new PointF(x, y); // Устанавливаем начальную позицию
             this.random = random;
-            SetRandomDirection();
-            Possessor = null;
+            SetRandomDirection(); // Устанавливаем случайное направление
+            Possessor = null; // Шайба никому не принадлежит
         }
 
         public void SetRandomDirection()
         {
-            // Случайное направление шайбы
+            // Генерируем случайное направление для шайбы
             float angle = (float)(random.NextDouble() * 2 * Math.PI);
-            float speed = 4;  // Скорость шайбы
-            Velocity = new PointF((float)Math.Cos(angle) * speed, (float)Math.Sin(angle) * speed);
+            float speed = 4;  // Устанавливаем скорость шайбы
+            Velocity = new PointF((float)Math.Cos(angle) * speed, (float)Math.Sin(angle) * speed); // Вычисляем компоненты скорости
         }
 
         public void Update(Size clientSize)
         {
-            // Если шайба не у игрока, она движется самостоятельно
+            // Если шайбой никто не владеет
             if (Possessor == null)
             {
+                // Обновляем позицию шайбы
                 Position = new PointF(Position.X + Velocity.X, Position.Y + Velocity.Y);
 
-                // Проверка на столкновение с краями экрана
+                // Проверяем столкновения с краями окна и меняем направление при необходимости
                 if (Position.X - Radius < 0 || Position.X + Radius > clientSize.Width)
                     Velocity = new PointF(-Velocity.X, Velocity.Y);
                 if (Position.Y - Radius < 0 || Position.Y + Radius > clientSize.Height)
@@ -175,179 +177,233 @@ namespace HockeyGame
             }
             else
             {
-                // Если шайба у игрока, она следует за ним
+                // Если шайба у хоккеиста, следует за ним
                 Position = Possessor.Position;
             }
         }
 
         public void Draw(Graphics g)
         {
+            // Рисуем шайбу
             g.FillEllipse(Brushes.Black, Position.X - Radius, Position.Y - Radius, Radius * 2, Radius * 2);
         }
     }
 
+    // Определяем возможные действия хоккеиста
+    public enum AthleteActionType
+    {
+        MoveToPosition, // Двигаться к определенной позиции
+        ChasePuck,      // Преследовать шайбу
+        MoveToGoal,     // Двигаться к воротам
+        Support,        // Поддерживать товарища по команде
+        Idle            // Без действия
+    }
+
+    // Класс действия хоккеиста
+    public class AthleteAction
+    {
+        public AthleteActionType ActionType { get; set; } // Тип действия
+        public PointF TargetPosition { get; set; } // Целевая позиция, если необходимо
+
+        public AthleteAction(AthleteActionType actionType, PointF targetPosition = default(PointF))
+        {
+            ActionType = actionType;
+            TargetPosition = targetPosition;
+        }
+    }
+
+    // Класс, представляющий хоккеиста
     public class Athlete
     {
-        public PointF Position { get; private set; }
-        public float Radius { get; private set; } = 15;
-        public Color Color { get; private set; }
+        public PointF Position { get; private set; } // Позиция хоккеиста
+        public float Radius { get; private set; } = 15; // Радиус хоккеиста
+        public Color Color { get; private set; } // Цвет команды хоккеиста
         private Rectangle targetGoal; // Цель — ворота противника
-        private bool hasPuck = false;
+        private bool hasPuck = false; // Владеет ли хоккеист шайбой
         private const float MaxSpeed = 6f; // Максимальная скорость
         private const float MinDistance = 20f; // Минимальное расстояние для избежания столкновений
         private const float SpeedMultiplier = 2.5f; // Множитель скорости
 
-        private PointF initialPosition;
+        private PointF initialPosition; // Начальная позиция хоккеиста
+
+        // Стек действий хоккеиста
+        private Stack<AthleteAction> actionStack = new Stack<AthleteAction>();
 
         public Athlete(float x, float y, Color color, Rectangle goal)
         {
-            Position = new PointF(x, y);
+            Position = new PointF(x, y); // Устанавливаем начальную позицию
             initialPosition = Position;
-            Color = color;
-            targetGoal = goal;
+            Color = color; // Устанавливаем цвет команды
+            targetGoal = goal; // Устанавливаем цель (ворота противника)
+
+            // Изначально хоккеист преследует шайбу
+            actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck));
         }
 
         public void Reset()
         {
+            // Сбрасываем состояние хоккеиста
             hasPuck = false;
             Position = initialPosition;
+            actionStack.Clear();
+            actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck)); // Начинаем преследовать шайбу
         }
 
         public void Update(Puck puck, Athlete[] athletes, Size clientSize)
         {
-            // Если хоккеист владеет шайбой
-            if (hasPuck)
+            // Обработка текущего действия из стека
+            if (actionStack.Count > 0)
             {
-                MoveTowardsGoal();
-
-                // Если хоккеист достиг ворот, сбрасываем владение шайбой
-                if (targetGoal.Contains((int)Position.X, (int)Position.Y))
+                AthleteAction currentAction = actionStack.Peek(); // Получаем текущее действие
+                switch (currentAction.ActionType)
                 {
-                    hasPuck = false;
-                    puck.Possessor = null;
+                    case AthleteActionType.ChasePuck:
+                        PerformChasePuck(puck); // Преследуем шайбу
+                        break;
+                    case AthleteActionType.MoveToGoal:
+                        PerformMoveToGoal(); // Двигаемся к воротам
+                        break;
+                    case AthleteActionType.Support:
+                        PerformSupport(); // Поддерживаем товарища
+                        break;
+                    case AthleteActionType.MoveToPosition:
+                        PerformMoveToPosition(currentAction.TargetPosition); // Двигаемся к определенной позиции
+                        break;
+                    case AthleteActionType.Idle:
+                        // Ничего не делаем
+                        break;
                 }
             }
             else
             {
-                // Движение к шайбе или игроку с шайбой
-                MoveTowardsPuck(puck);
+                // Если действий нет, начинаем преследовать шайбу
+                actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck));
             }
 
             // Избегаем столкновений с другими хоккеистами
             AvoidCollisionWithAthletes(athletes);
 
-            // Ограничиваем движение по полю
+            // Ограничиваем движение в пределах окна
             RestrictWithinBounds(clientSize);
         }
 
-        private void MoveTowardsPuck(Puck puck)
+        private void PerformChasePuck(Puck puck)
         {
+            if (hasPuck)
+            {
+                // Если владеем шайбой, начинаем двигаться к воротам
+                actionStack.Pop();
+                actionStack.Push(new AthleteAction(AthleteActionType.MoveToGoal));
+                return;
+            }
+
             if (puck.Possessor == null)
             {
-                // Движение к шайбе
-                float dx = puck.Position.X - Position.X;
-                float dy = puck.Position.Y - Position.Y;
-                float distance = (float)Math.Sqrt(dx * dx + dy * dy);
+                // Двигаемся к шайбе
+                MoveTowards(puck.Position);
 
+                // Проверяем, можем ли завладеть шайбой
+                float distance = GetDistance(Position, puck.Position);
                 if (distance < Radius + puck.Radius)
                 {
-                    hasPuck = true;
+                    hasPuck = true; // Теперь владеем шайбой
                     puck.Possessor = this;
                 }
-
-                if (distance > 0.1)
-                {
-                    dx /= distance;
-                    dy /= distance;
-                }
-
-                dx *= SpeedMultiplier;
-                dy *= SpeedMultiplier;
-
-                Position = new PointF(Position.X + dx, Position.Y + dy);
             }
             else
             {
                 if (puck.Possessor.Color != this.Color)
                 {
-                    // Преследуем игрока противника с шайбой
-                    float dx = puck.Possessor.Position.X - Position.X;
-                    float dy = puck.Possessor.Position.Y - Position.Y;
-                    float distance = (float)Math.Sqrt(dx * dx + dy * dy);
-
-                    if (distance > 0.1)
-                    {
-                        dx /= distance;
-                        dy /= distance;
-                    }
-
-                    dx *= SpeedMultiplier;
-                    dy *= SpeedMultiplier;
-
-                    Position = new PointF(Position.X + dx, Position.Y + dy);
+                    // Преследуем противника с шайбой
+                    MoveTowards(puck.Possessor.Position);
                 }
                 else
                 {
-                    // Товарищ по команде владеет шайбой
-                    // Можно реализовать логику поддержки или занять позицию для паса
-                    MoveTowardsSupportPosition();
+                    // Наш товарищ владеет шайбой, переходим в поддержку
+                    actionStack.Pop();
+                    actionStack.Push(new AthleteAction(AthleteActionType.Support));
                 }
             }
         }
 
-        private void MoveTowardsGoal()
+        private void PerformMoveToGoal()
         {
-            // Движение к центру ворот противника
+            if (!hasPuck)
+            {
+                // Если потеряли шайбу, возвращаемся к преследованию
+                actionStack.Pop();
+                actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck));
+                return;
+            }
+
+            // Двигаемся к центру ворот противника
             float goalCenterX = targetGoal.X + targetGoal.Width / 2;
             float goalCenterY = targetGoal.Y + targetGoal.Height / 2;
+            PointF goalCenter = new PointF(goalCenterX, goalCenterY);
 
-            float dx = goalCenterX - Position.X;
-            float dy = goalCenterY - Position.Y;
+            MoveTowards(goalCenter);
+
+            // Проверяем, достигли ли ворот
+            if (targetGoal.Contains((int)Position.X, (int)Position.Y))
+            {
+                hasPuck = false; // Больше не владеем шайбой
+                actionStack.Pop();
+                actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck)); // Возвращаемся к преследованию шайбы
+            }
+        }
+
+        private void PerformSupport()
+        {
+            // Двигаемся в позицию поддержки
+            float supportX = targetGoal.X + (Color == Color.Red ? -100 : 100);
+            float supportY = targetGoal.Y + targetGoal.Height / 2;
+            PointF supportPosition = new PointF(supportX, supportY);
+
+            MoveTowards(supportPosition);
+
+            // Здесь можно добавить дополнительную логику, например, пас
+        }
+
+        private void PerformMoveToPosition(PointF targetPosition)
+        {
+            // Двигаемся к заданной позиции
+            MoveTowards(targetPosition);
+
+            // Проверяем, достигли ли позиции
+            float distance = GetDistance(Position, targetPosition);
+            if (distance < 5f)
+            {
+                actionStack.Pop(); // Удаляем действие из стека
+            }
+        }
+
+        private void MoveTowards(PointF target)
+        {
+            // Вычисляем направление движения
+            float dx = target.X - Position.X;
+            float dy = target.Y - Position.Y;
             float distance = (float)Math.Sqrt(dx * dx + dy * dy);
 
             if (distance > 0.1)
             {
-                dx /= distance;
+                dx /= distance; // Нормализуем вектор
                 dy /= distance;
             }
 
-            dx *= SpeedMultiplier;
+            dx *= SpeedMultiplier; // Применяем множитель скорости
             dy *= SpeedMultiplier;
 
-            // Ограничение скорости
+            // Ограничиваем скорость
             if (Math.Abs(dx) > MaxSpeed) dx = MaxSpeed * Math.Sign(dx);
             if (Math.Abs(dy) > MaxSpeed) dy = MaxSpeed * Math.Sign(dy);
 
-            Position = new PointF(Position.X + dx, Position.Y + dy);
-        }
-
-        private void MoveTowardsSupportPosition()
-        {
-            // Простая логика для движения к поддерживающей позиции
-            // Например, игрок движется к определенной точке на поле
-
-            // Определяем позицию немного сбоку от ворот противника
-            float supportX = targetGoal.X + (Color == Color.Red ? -50 : 50);
-            float supportY = targetGoal.Y + targetGoal.Height / 2;
-
-            float dx = supportX - Position.X;
-            float dy = supportY - Position.Y;
-            float distance = (float)Math.Sqrt(dx * dx + dy * dy);
-
-            if (distance > 0.1)
-            {
-                dx /= distance;
-                dy /= distance;
-            }
-
-            dx *= SpeedMultiplier / 2; // Движемся медленнее, когда поддерживаем
-            dy *= SpeedMultiplier / 2;
-
+            // Обновляем позицию
             Position = new PointF(Position.X + dx, Position.Y + dy);
         }
 
         private void AvoidCollisionWithAthletes(Athlete[] athletes)
         {
+            // Избегаем столкновений с другими хоккеистами
             foreach (var athlete in athletes)
             {
                 if (athlete != this)
@@ -357,9 +413,9 @@ namespace HockeyGame
                     float distance = (float)Math.Sqrt(dx * dx + dy * dy);
                     if (distance < MinDistance && distance > 0)
                     {
-                        dx /= distance;
+                        dx /= distance; // Нормализуем вектор
                         dy /= distance;
-                        Position = new PointF(Position.X + dx, Position.Y + dy);
+                        Position = new PointF(Position.X + dx, Position.Y + dy); // Отталкиваемся
                     }
                 }
             }
@@ -367,14 +423,24 @@ namespace HockeyGame
 
         private void RestrictWithinBounds(Size clientSize)
         {
+            // Ограничиваем движение хоккеиста в пределах окна
             if (Position.X - Radius < 0) Position = new PointF(Radius, Position.Y);
             if (Position.X + Radius > clientSize.Width) Position = new PointF(clientSize.Width - Radius, Position.Y);
             if (Position.Y - Radius < 0) Position = new PointF(Position.X, Radius);
             if (Position.Y + Radius > clientSize.Height) Position = new PointF(Position.X, clientSize.Height - Radius);
         }
 
+        private float GetDistance(PointF p1, PointF p2)
+        {
+            // Вычисляем расстояние между двумя точками
+            float dx = p1.X - p2.X;
+            float dy = p1.Y - p2.Y;
+            return (float)Math.Sqrt(dx * dx + dy * dy);
+        }
+
         public void Draw(Graphics g)
         {
+            // Рисуем хоккеиста
             using (Brush brush = new SolidBrush(Color))
             {
                 g.FillEllipse(brush, Position.X - Radius, Position.Y - Radius, Radius * 2, Radius * 2);
