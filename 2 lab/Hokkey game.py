@@ -24,10 +24,6 @@ class Vector2D:
         self.x += other.x
         self.y += other.y
 
-    def subtract(self, other):
-        self.x -= other.x
-        self.y -= other.y
-
     def length(self):
         return math.sqrt(self.x**2 + self.y**2)
 
@@ -43,24 +39,28 @@ class Vector2D:
 
 # Класс для хоккеистов
 class Athlete:
-    def __init__(self, x, y, color):
+    def __init__(self, x, y, color, goal_position):
         self.position = Vector2D(x, y)
         self.velocity = Vector2D(random.uniform(-1, 1), random.uniform(-1, 1))
         self.velocity.normalize()
-        self.velocity.scale(2)
+        self.velocity.scale(4)  # Увеличиваем скорость
         self.color = color
         self.radius = 15
+        self.goal_position = goal_position  # Позиция ворот противника
 
     def update(self, puck):
-        # Если хоккеист владеет шайбой, он не двигается
         if puck.owner == self:
-            return
-
-        # Простой ИИ для преследования шайбы
-        direction = Vector2D(puck.position.x - self.position.x, puck.position.y - self.position.y)
-        direction.normalize()
-        direction.scale(1.5)
-        self.position.add(direction)
+            # Если хоккеист владеет шайбой, он движется к воротам противника
+            direction = Vector2D(self.goal_position.x - self.position.x, self.goal_position.y - self.position.y)
+            direction.normalize()
+            direction.scale(3)  # Скорость движения к воротам
+            self.position.add(direction)
+        else:
+            # Простой ИИ для преследования шайбы
+            direction = Vector2D(puck.position.x - self.position.x, puck.position.y - self.position.y)
+            direction.normalize()
+            direction.scale(2)  # Скорость преследования шайбы
+            self.position.add(direction)
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (int(self.position.x), int(self.position.y)), self.radius)
@@ -89,14 +89,25 @@ class Puck:
     def draw(self, screen):
         pygame.draw.circle(screen, BLACK, (int(self.position.x), int(self.position.y)), self.radius)
 
-# Класс для игры
-class PlayState:
+# Класс для базового состояния
+class GameState:
+    def update(self):
+        pass
+
+    def draw(self, screen):
+        pass
+
+    def handle_input(self, event):
+        pass
+
+# Класс состояния игры
+class PlayState(GameState):
     def __init__(self):
         self.athletes = [
-            Athlete(100, 100, RED),
-            Athlete(700, 100, BLUE),
-            Athlete(100, 500, RED),
-            Athlete(700, 500, BLUE)
+            Athlete(100, 100, RED, Vector2D(WINDOW_WIDTH - 20, WINDOW_HEIGHT // 2)),
+            Athlete(700, 100, BLUE, Vector2D(10, WINDOW_HEIGHT // 2)),
+            Athlete(100, 500, RED, Vector2D(WINDOW_WIDTH - 20, WINDOW_HEIGHT // 2)),
+            Athlete(700, 500, BLUE, Vector2D(10, WINDOW_HEIGHT // 2))
         ]
         self.puck = Puck(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
         self.right_goal = pygame.Rect(WINDOW_WIDTH - 20, WINDOW_HEIGHT // 2 - 50, 10, 100)
@@ -105,20 +116,15 @@ class PlayState:
         self.score_blue = 0
 
     def update(self):
-        # Обновление шайбы
         self.puck.update()
-
-        # Обновление состояния хоккеистов
         for athlete in self.athletes:
             athlete.update(self.puck)
 
-        # Проверка на взятие шайбы
         for athlete in self.athletes:
             if self.puck.owner is None and self.distance(athlete.position, self.puck.position) < athlete.radius:
                 self.puck.owner = athlete
                 break
 
-        # Проверка на гол
         self.check_goal()
 
     def check_goal(self):
@@ -133,7 +139,6 @@ class PlayState:
             self.reset_game()
 
     def reset_game(self):
-        # Возвращаем шайбу в центр и освобождаем её
         self.puck.position = Vector2D(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
         self.puck.owner = None
         self.puck.velocity = Vector2D(random.uniform(-2, 2), random.uniform(-2, 2))
@@ -144,17 +149,38 @@ class PlayState:
         return math.sqrt((pos1.x - pos2.x)**2 + (pos1.y - pos2.y)**2)
 
     def draw(self, screen):
-        # Отображение поля, ворот, хоккеистов и шайбы
         pygame.draw.rect(screen, WHITE, self.right_goal)
         pygame.draw.rect(screen, WHITE, self.left_goal)
         for athlete in self.athletes:
             athlete.draw(screen)
         self.puck.draw(screen)
-
-        # Отображение счёта
         font = pygame.font.Font(None, 36)
         score_text = font.render(f"Red: {self.score_red} Blue: {self.score_blue}", True, BLACK)
         screen.blit(score_text, (WINDOW_WIDTH // 2 - 100, 20))
+
+# Класс управления состояниями игры (стек состояний)
+class GameStateManager:
+    def __init__(self):
+        self.stack = []
+
+    def push(self, state):
+        self.stack.append(state)
+
+    def pop(self):
+        if len(self.stack) > 0:
+            self.stack.pop()
+
+    def update(self):
+        if len(self.stack) > 0:
+            self.stack[-1].update()
+
+    def draw(self, screen):
+        if len(self.stack) > 0:
+            self.stack[-1].draw(screen)
+
+    def handle_input(self, event):
+        if len(self.stack) > 0:
+            self.stack[-1].handle_input(event)
 
 # Главный цикл игры
 def main():
@@ -163,10 +189,12 @@ def main():
     pygame.display.set_caption("Hockey Game")
     clock = pygame.time.Clock()
 
-    # Инициализация игры
-    game = PlayState()
+    # Инициализация менеджера состояний
+    game_state_manager = GameStateManager()
 
-    # Игровой цикл
+    # Добавляем игровое состояние в стек
+    game_state_manager.push(PlayState())
+
     running = True
     while running:
         screen.fill((0, 128, 128))
@@ -175,17 +203,17 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            game_state_manager.handle_input(event)
 
         # Обновление игрового состояния
-        game.update()
+        game_state_manager.update()
 
         # Отображение элементов на экране
-        game.draw(screen)
+        game_state_manager.draw(screen)
 
         # Обновление экрана
         pygame.display.flip()
 
-        # Ограничение частоты кадров
         clock.tick(60)
 
     pygame.quit()
