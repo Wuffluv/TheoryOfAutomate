@@ -60,15 +60,15 @@ namespace HockeyGame
             // Обновляем позиции хоккеистов и шайбы
             foreach (var athlete in athletes)
             {
-                athlete.Update(puck, athletes, this.ClientSize);
+                athlete.Update(puck, athletes, this.ClientSize); // Обновляем состояние каждого хоккеиста
             }
-            puck.Update(this.ClientSize);
+            puck.Update(this.ClientSize); // Обновляем состояние шайбы
 
             // Проверяем, был ли забит гол
             CheckGoal();
 
             // Перерисовываем поле
-            this.Invalidate();
+            this.Invalidate(); // Вызывает перерисовку формы
         }
 
         private void CheckGoal()
@@ -103,7 +103,7 @@ namespace HockeyGame
             // Сбрасываем состояние всех хоккеистов
             foreach (var athlete in athletes)
             {
-                athlete.Reset();
+                athlete.Reset(); // Сбрасываем состояние хоккеиста
             }
         }
 
@@ -115,6 +115,7 @@ namespace HockeyGame
 
         private void button2_Click(object sender, EventArgs e)
         {
+            // Сбрасываем игру при нажатии на кнопку
             ResetGame();
         }
 
@@ -125,11 +126,11 @@ namespace HockeyGame
             // Рисуем хоккеистов
             foreach (var athlete in athletes)
             {
-                athlete.Draw(e.Graphics);
+                athlete.Draw(e.Graphics); // Отрисовываем каждого хоккеиста
             }
 
             // Рисуем шайбу
-            puck.Draw(e.Graphics);
+            puck.Draw(e.Graphics); // Отрисовываем шайбу
 
             // Рисуем ворота
             e.Graphics.FillRectangle(Brushes.White, leftGoal);
@@ -146,6 +147,7 @@ namespace HockeyGame
             {
                 using (Pen pen = new Pen(Color.Yellow, 2))
                 {
+                    // Рисуем окружность вокруг управляемого хоккеиста
                     e.Graphics.DrawEllipse(pen,
                         controlledAthlete.Position.X - controlledAthlete.Radius - 5,
                         controlledAthlete.Position.Y - controlledAthlete.Radius - 5,
@@ -162,6 +164,7 @@ namespace HockeyGame
 
             bool athleteClicked = false;
 
+            // Проверяем, кликнул ли пользователь по хоккеисту
             foreach (var athlete in athletes)
             {
                 float dx = athlete.Position.X - e.X;
@@ -176,6 +179,7 @@ namespace HockeyGame
                         controlledAthlete.IsControlled = false;
                     }
 
+                    // Устанавливаем текущего хоккеиста как управляемого
                     controlledAthlete = athlete;
                     athlete.IsControlled = true;
                     athleteClicked = true;
@@ -216,7 +220,7 @@ namespace HockeyGame
         {
             Position = new PointF(x, y); // Устанавливаем начальную позицию
             this.random = random;
-            SetRandomDirection(); // Устанавливаем случайное направление
+            SetRandomDirection(); // Устанавливаем случайное направление движения
             Possessor = null; // Шайба никому не принадлежит
         }
 
@@ -233,7 +237,7 @@ namespace HockeyGame
             // Если шайбой никто не владеет
             if (Possessor == null)
             {
-                // Обновляем позицию шайбы
+                // Обновляем позицию шайбы на основе скорости
                 Position = new PointF(Position.X + Velocity.X, Position.Y + Velocity.Y);
 
                 // Проверяем столкновения с краями окна и меняем направление при необходимости
@@ -297,13 +301,20 @@ namespace HockeyGame
         private Stack<AthleteAction> actionStack = new Stack<AthleteAction>();
 
         // Свойства для управления
-        public bool IsControlled { get; set; }
-        public PointF ControlledTargetPosition { get; set; }
+        public bool IsControlled { get; set; } // Флаг, указывающий, управляется ли хоккеист игроком
+        public PointF ControlledTargetPosition { get; set; } // Целевая позиция при управлении
+
+        // Свойство для доступа к приватному полю hasPuck
+        public bool HasPuck
+        {
+            get { return hasPuck; }
+            set { hasPuck = value; }
+        }
 
         public Athlete(float x, float y, Color color, Rectangle goal)
         {
             Position = new PointF(x, y); // Устанавливаем начальную позицию
-            initialPosition = Position;
+            initialPosition = Position; // Сохраняем начальную позицию
             Color = color; // Устанавливаем цвет команды
             targetGoal = goal; // Устанавливаем цель (ворота противника)
 
@@ -315,11 +326,11 @@ namespace HockeyGame
         {
             // Сбрасываем состояние хоккеиста
             hasPuck = false;
-            Position = initialPosition;
-            actionStack.Clear();
+            Position = initialPosition; // Возвращаемся на начальную позицию
+            actionStack.Clear(); // Очищаем стек действий
             actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck)); // Начинаем преследовать шайбу
-            IsControlled = false;
-            ControlledTargetPosition = Position;
+            IsControlled = false; // Отменяем управление
+            ControlledTargetPosition = Position; // Сбрасываем целевую позицию
         }
 
         public void Update(Puck puck, Athlete[] athletes, Size clientSize)
@@ -335,17 +346,17 @@ namespace HockeyGame
                     float distanceToPuck = GetDistance(Position, puck.Position);
                     if (distanceToPuck < Radius + puck.Radius)
                     {
-                        hasPuck = true;
+                        hasPuck = true; // Захватываем шайбу
                         puck.Possessor = this;
                     }
                 }
                 else if (puck.Possessor == this)
                 {
-                    hasPuck = true;
+                    hasPuck = true; // Удерживаем шайбу
                 }
                 else
                 {
-                    hasPuck = false;
+                    hasPuck = false; // Не владеем шайбой
                 }
 
                 // Если владеем шайбой, она следует за нами
@@ -355,7 +366,7 @@ namespace HockeyGame
                 }
 
                 // Избегаем столкновений и остаемся в пределах окна
-                AvoidCollisionWithAthletes(athletes);
+                AvoidCollisionWithAthletes(athletes, puck);
                 RestrictWithinBounds(clientSize);
             }
             else
@@ -390,7 +401,7 @@ namespace HockeyGame
                 }
 
                 // Избегаем столкновений и остаемся в пределах окна
-                AvoidCollisionWithAthletes(athletes);
+                AvoidCollisionWithAthletes(athletes, puck);
                 RestrictWithinBounds(clientSize);
             }
         }
@@ -400,8 +411,8 @@ namespace HockeyGame
             if (hasPuck)
             {
                 // Если владеем шайбой, начинаем двигаться к воротам
-                actionStack.Pop();
-                actionStack.Push(new AthleteAction(AthleteActionType.MoveToGoal));
+                actionStack.Pop(); // Удаляем текущее действие
+                actionStack.Push(new AthleteAction(AthleteActionType.MoveToGoal)); // Добавляем новое действие
                 return;
             }
 
@@ -428,8 +439,8 @@ namespace HockeyGame
                 else
                 {
                     // Наш товарищ владеет шайбой, переходим в поддержку
-                    actionStack.Pop();
-                    actionStack.Push(new AthleteAction(AthleteActionType.Support));
+                    actionStack.Pop(); // Удаляем текущее действие
+                    actionStack.Push(new AthleteAction(AthleteActionType.Support)); // Добавляем новое действие
                 }
             }
         }
@@ -439,8 +450,8 @@ namespace HockeyGame
             if (!hasPuck)
             {
                 // Если потеряли шайбу, возвращаемся к преследованию
-                actionStack.Pop();
-                actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck));
+                actionStack.Pop(); // Удаляем текущее действие
+                actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck)); // Добавляем новое действие
                 return;
             }
 
@@ -455,7 +466,7 @@ namespace HockeyGame
             if (targetGoal.Contains((int)Position.X, (int)Position.Y))
             {
                 hasPuck = false; // Больше не владеем шайбой
-                actionStack.Pop();
+                actionStack.Pop(); // Удаляем текущее действие
                 actionStack.Push(new AthleteAction(AthleteActionType.ChasePuck)); // Возвращаемся к преследованию шайбы
             }
         }
@@ -509,7 +520,8 @@ namespace HockeyGame
             Position = new PointF(Position.X + dx, Position.Y + dy);
         }
 
-        private void AvoidCollisionWithAthletes(Athlete[] athletes)
+        // Обновленный метод AvoidCollisionWithAthletes
+        private void AvoidCollisionWithAthletes(Athlete[] athletes, Puck puck)
         {
             // Избегаем столкновений с другими хоккеистами
             foreach (var athlete in athletes)
@@ -525,7 +537,7 @@ namespace HockeyGame
                         {
                             dx /= distance; // Нормализуем вектор
                             dy /= distance;
-                            Position = new PointF(Position.X + dx, Position.Y + dy); // Отталкиваемся
+                            Position = new PointF(Position.X + dx, Position.Y + dy); // Отталкиваемся от другого хоккеиста
                         }
                         else
                         {
@@ -533,6 +545,15 @@ namespace HockeyGame
                             dx /= distance;
                             dy /= distance;
                             athlete.Position = new PointF(athlete.Position.X - dx, athlete.Position.Y - dy);
+                        }
+
+                        // Проверяем, можно ли перехватить шайбу
+                        if (athlete.HasPuck && athlete.Color != this.Color)
+                        {
+                            // Перехватываем шайбу
+                            athlete.HasPuck = false; // Противник теряет шайбу
+                            this.HasPuck = true; // Мы получаем шайбу
+                            puck.Possessor = this; // Обновляем владельца шайбы
                         }
                     }
                 }
