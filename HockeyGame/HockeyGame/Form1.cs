@@ -14,11 +14,14 @@ namespace HockeyGame
         private Rectangle leftGoal, rightGoal;
         private Random random = new Random();
 
+
         public Form1()
         {
             InitializeComponent();
             InitializeGame();
         }
+
+
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
@@ -27,6 +30,8 @@ namespace HockeyGame
 
         private void InitializeGame()
         {
+            // Включаем двойную буферизацию для предотвращения мерцания
+            this.DoubleBuffered = true;
             // Задаем размеры и положение ворот
             leftGoal = new Rectangle(20, this.ClientSize.Height / 2 - 50, 10, 100);
             rightGoal = new Rectangle(this.ClientSize.Width - 30, this.ClientSize.Height / 2 - 50, 10, 100);
@@ -66,15 +71,21 @@ namespace HockeyGame
 
         private void CheckGoal()
         {
-            // Если шайба в левых воротах (гол для синих)
-            if (leftGoal.Contains((int)puck.Position.X, (int)puck.Position.Y))
+            // Создаем прямоугольник, представляющий шайбу
+            RectangleF puckRect = new RectangleF(
+                puck.Position.X - puck.Radius,
+                puck.Position.Y - puck.Radius,
+                puck.Radius * 2,
+                puck.Radius * 2);
+
+            // Проверяем пересечение шайбы с левыми воротами (гол для синих)
+            if (puckRect.IntersectsWith(leftGoal))
             {
                 blueScore++;
                 ResetGame();
             }
-
-            // Если шайба в правых воротах (гол для красных)
-            if (rightGoal.Contains((int)puck.Position.X, (int)puck.Position.Y))
+            // Проверяем пересечение шайбы с правыми воротами (гол для красных)
+            else if (puckRect.IntersectsWith(rightGoal))
             {
                 redScore++;
                 ResetGame();
@@ -92,6 +103,11 @@ namespace HockeyGame
             {
                 athlete.Reset();
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         protected override void OnPaint(PaintEventArgs e)
