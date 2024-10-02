@@ -50,9 +50,9 @@ void processFile(const std::string& inputFileName, const std::string& outputFile
                 }
             }
             else if (c == '\'') {
-                //inputFile.ignore();
+                
                 state = State::String_literal;
-                /*outputFile << c;*/
+                
             }
             else {
                 outputFile << c;

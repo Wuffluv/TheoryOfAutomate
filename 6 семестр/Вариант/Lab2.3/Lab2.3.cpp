@@ -51,16 +51,11 @@ void Analizator(const string& text) {
         }
         else
             break;
-    }// while (now != S && text[count] != '\u00A7');
-    while (now != ER && text[count] != '\u00A7'); //now != State.S &&
+    }
+    while (now != ER && text[count] != '\u00A7'); 
     cout << res << endl;
 
-    //проверяем было ли достугнуто конечное состояние 
-  /*  reachedFinalState = (now == S && count == text.length());
-    if (reachedFinalState)
-        cout << "Цепочка принадлежит данному языку." << std::endl;
-    else
-        cout << "Цепочка не принадлежит данному языку." << std::endl;*/
+   
 }
 
 int main()
@@ -81,7 +76,7 @@ int main()
     PrintRules(dict);
     FormalLanguage fl(dict);
 
-    //take_input();
+    
     take_input_static();
     print_output();
     create_state_transitions(start_state);
