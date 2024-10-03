@@ -67,15 +67,15 @@ namespace Lab5
             {
                 case TrafficLightState.Red:
                     currentState = TrafficLightState.Green; // Переход на зеленый
-                    timeLeft = 10; // Время до смены на желтый
+                    timeLeft = 10; 
                     break;
                 case TrafficLightState.Green:
                     currentState = TrafficLightState.Yellow; // Переход на желтый
-                    timeLeft = 5; // Время до смены на красный
+                    timeLeft = 5; 
                     break;
                 case TrafficLightState.Yellow:
                     currentState = TrafficLightState.Red; // Переход на красный
-                    timeLeft = 10; // Время до смены на зеленый
+                    timeLeft = 10; 
                     break;
             }
 
@@ -105,14 +105,8 @@ namespace Lab5
             if (!string.IsNullOrEmpty(imageName))
             {
                 string fullPath = Path.Combine(imagePath, imageName); // Полный путь к изображению
-                if (File.Exists(fullPath))
-                {
-                    pictureBox1.Image = Image.FromFile(fullPath); // Загружаем изображение в PictureBox
-                }
-                else
-                {
-                    MessageBox.Show($"Изображение {imageName} не найдено по пути {fullPath}!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                pictureBox1.Image = Image.FromFile(fullPath); // Загружаем изображение в PictureBox
+                
             }
         }
     }
