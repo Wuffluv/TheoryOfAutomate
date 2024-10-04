@@ -19,6 +19,7 @@ namespace Lab5
         private int timeLeft; // Время до смены состояния
         private string imagePath = @"C:\Users\wolfd\Desktop\Study\Теория Автоматов\Lab5\Img\"; // Путь к изображениям светофора
         private bool isBlinking = false; // Флаг для мигания
+        private bool flag = false;
 
         public Form1()
         {
@@ -66,17 +67,33 @@ namespace Lab5
             switch (currentState)
             {
                 case TrafficLightState.Red:
-                    currentState = TrafficLightState.Green; // Переход на зеленый
-                    timeLeft = 10; 
+                    currentState = TrafficLightState.Yellow; // Переход на зеленый
+                    timeLeft = 5; 
                     break;
+
+                case TrafficLightState.Yellow:
+                    if (flag == false)
+                    {
+                        currentState = TrafficLightState.Green; // Переход на красный
+                        timeLeft = 10;
+                        flag = true;
+                    }
+                    else
+                    {
+                        currentState = TrafficLightState.Red; // Переход на красный
+                        timeLeft = 10;
+                        flag = false;
+                    }
+                    break;
+
+
                 case TrafficLightState.Green:
                     currentState = TrafficLightState.Yellow; // Переход на желтый
                     timeLeft = 5; 
                     break;
-                case TrafficLightState.Yellow:
-                    currentState = TrafficLightState.Red; // Переход на красный
-                    timeLeft = 10; 
-                    break;
+
+                
+
             }
 
             isBlinking = false; // Сбрасываем мигание
@@ -102,7 +119,7 @@ namespace Lab5
             }
 
             
-                
+                string fullPath = Path.Combine(imagePath, imageName); // Полный путь к изображению
                 pictureBox1.Image = Image.FromFile(fullPath); // Загружаем изображение в PictureBox
                
            
