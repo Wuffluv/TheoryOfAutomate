@@ -54,11 +54,11 @@ namespace Lab4
             {
                 case LampState.Off:
                     label1.Text = "Лампочка выключена";
-                    LoadImage("lamp_off.png"); // Загружаем изображение выключенной лампочки
+                    LoadImage("lamp_off.png"); //изображение выключенной лампочки
                     break;
                 case LampState.On:
                     label1.Text = "Лампочка включена";
-                    LoadImage("lamp_on.png"); // Загружаем изображение включенной лампочки
+                    LoadImage("lamp_on.png"); // изображение включенной лампочки
                     break;
                 case LampState.BurnOut:
                     label1.Text = "Лампочка перегорела!";

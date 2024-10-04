@@ -101,13 +101,11 @@ namespace Lab5
                     break;
             }
 
-            // Если изображение пустое, очищаем PictureBox
-            if (!string.IsNullOrEmpty(imageName))
-            {
-                string fullPath = Path.Combine(imagePath, imageName); // Полный путь к изображению
-                pictureBox1.Image = Image.FromFile(fullPath); // Загружаем изображение в PictureBox
+            
                 
-            }
+                pictureBox1.Image = Image.FromFile(fullPath); // Загружаем изображение в PictureBox
+               
+           
         }
     }
 }
