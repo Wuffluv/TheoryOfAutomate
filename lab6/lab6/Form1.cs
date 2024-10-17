@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace lab6
@@ -20,8 +13,8 @@ namespace lab6
         }
 
         private AccountState currentState; // Текущее состояние счета
-        private decimal balance;            // Баланс счета
-        private decimal debt;               // Долг по счету
+        private decimal balance;           // Баланс счета
+        private decimal debt;              // Долг по счету
 
         public Form1()
         {
@@ -60,20 +53,7 @@ namespace lab6
             label3.Text = "Долг: " + debt.ToString("C");
         }
 
-        // Открытие счета
-        private void button1_Click(object sender, EventArgs e)
-        {
-            currentState = AccountState.GoodAccount;
-            balance = 0;
-            debt = 0;
-            UpdateStateLabel();
-            UpdateBalanceLabel();
-            UpdateDebtLabel();
-            MessageBox.Show("Счет открыт.");
-            textBox1.Clear();  // Очистка поля ввода
-        }
-
-        // Закрытие счета
+        // Закрытие счета (обнуление баланса и долга)
         private void button2_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Счет закрыт.");
@@ -86,32 +66,15 @@ namespace lab6
             textBox1.Clear();  // Очистка поля ввода
         }
 
-        // Вклад (внесение денег)
+        // Вклад (внесение денег только на баланс, долг не изменяется)
         private void button3_Click(object sender, EventArgs e)
         {
             decimal depositAmount;
             if (decimal.TryParse(textBox1.Text, out depositAmount) && depositAmount > 0)
             {
-                if (currentState == AccountState.Overdrawn)
-                {
-                    // Погашаем долг в первую очередь
-                    if (depositAmount >= debt)
-                    {
-                        depositAmount -= debt;
-                        debt = 0;
-                        currentState = AccountState.GoodAccount;
-                    }
-                    else
-                    {
-                        debt -= depositAmount;
-                        depositAmount = 0;
-                    }
-                }
-
-                balance += depositAmount;
+                balance += depositAmount; // Вклад всегда увеличивает баланс
                 UpdateStateLabel();
                 UpdateBalanceLabel();
-                UpdateDebtLabel();
             }
             else
             {
@@ -129,13 +92,13 @@ namespace lab6
             {
                 if (balance >= withdrawalAmount)
                 {
-                    balance -= withdrawalAmount;
+                    balance -= withdrawalAmount; // Снятие с баланса
                 }
                 else
                 {
-                    debt += (withdrawalAmount - balance);
+                    debt += (withdrawalAmount - balance); // Добавляем долг
                     balance = 0;
-                    currentState = AccountState.Overdrawn;
+                    currentState = AccountState.Overdrawn; // Меняем состояние на перерасход
                 }
 
                 UpdateStateLabel();
@@ -150,47 +113,22 @@ namespace lab6
             textBox1.Clear();  // Очистка поля ввода
         }
 
-        // Разрешенное снятие денег при перерасходе
-        private void button5_Click(object sender, EventArgs e)
-        {
-            if (currentState == AccountState.Overdrawn)
-            {
-                MessageBox.Show("Разрешено снятие денег при наличии долга.");
-            }
-            else
-            {
-                MessageBox.Show("Счет в порядке, разрешенное снятие не требуется.");
-            }
-
-            textBox1.Clear();  // Очистка поля ввода
-        }
-
         // Погашение долга
         private void button6_Click(object sender, EventArgs e)
         {
             if (currentState == AccountState.Overdrawn)
             {
-                decimal paymentAmount;
-                if (decimal.TryParse(textBox1.Text, out paymentAmount) && paymentAmount > 0)
+                // Если на балансе достаточно средств для погашения долга
+                if (balance >= debt)
                 {
-                    if (paymentAmount >= debt)
-                    {
-                        paymentAmount -= debt;
-                        debt = 0;
-                        currentState = AccountState.GoodAccount;
-                        balance += paymentAmount; // Остаток после погашения идет на баланс
-                    }
-                    else
-                    {
-                        debt -= paymentAmount;
-                    }
-                    UpdateStateLabel();
-                    UpdateBalanceLabel();
-                    UpdateDebtLabel();
+                    balance -= debt;  // Списываем долг с баланса
+                    debt = 0;         // Обнуляем долг
+                    currentState = AccountState.GoodAccount; // Состояние счета становится хорошим
+                    MessageBox.Show("Долг успешно погашен с баланса.");
                 }
                 else
                 {
-                    MessageBox.Show("Введите корректную сумму для погашения долга.");
+                    MessageBox.Show("Недостаточно средств на балансе для погашения долга.");
                 }
             }
             else
@@ -198,7 +136,13 @@ namespace lab6
                 MessageBox.Show("У вас нет долга.");
             }
 
-            textBox1.Clear();  // Очистка поля ввода
+            // Обновляем все соответствующие поля
+            UpdateStateLabel();
+            UpdateBalanceLabel();
+            UpdateDebtLabel();   // Обновляем отображение долга
+            textBox1.Clear();    // Очистка поля ввода
         }
+
+
     }
 }

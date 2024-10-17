@@ -43,7 +43,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.BackColor = System.Drawing.Color.Gold;
-            this.label1.Location = new System.Drawing.Point(258, 138);
+            this.label1.Location = new System.Drawing.Point(258, 75);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(44, 16);
             this.label1.TabIndex = 0;
@@ -54,7 +54,7 @@
             this.label2.AutoSize = true;
             this.label2.BackColor = System.Drawing.Color.Gold;
             this.label2.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.label2.Location = new System.Drawing.Point(258, 181);
+            this.label2.Location = new System.Drawing.Point(258, 138);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(44, 16);
             this.label2.TabIndex = 1;
@@ -111,7 +111,7 @@
             this.button5.TabIndex = 8;
             this.button5.Text = "Разрешенное снятие";
             this.button5.UseVisualStyleBackColor = false;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
+            //this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button6
             // 
@@ -128,7 +128,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.BackColor = System.Drawing.Color.Gold;
-            this.label3.Location = new System.Drawing.Point(258, 223);
+            this.label3.Location = new System.Drawing.Point(258, 193);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(44, 16);
             this.label3.TabIndex = 10;
@@ -139,7 +139,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DarkSlateGray;
-            this.ClientSize = new System.Drawing.Size(528, 513);
+            this.ClientSize = new System.Drawing.Size(511, 398);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.button5);
