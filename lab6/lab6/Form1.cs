@@ -12,16 +12,17 @@ namespace lab6
 {
     public partial class Form1 : Form
     {
-
         // Определение состояний
         enum AccountState
         {
             GoodAccount,  // Счет хороший
             Overdrawn     // Превышены расходы по счету
         }
+
         private AccountState currentState; // Текущее состояние счета
         private decimal balance;            // Баланс счета
         private decimal debt;               // Долг по счету
+
         public Form1()
         {
             InitializeComponent();
@@ -30,6 +31,7 @@ namespace lab6
             debt = 0;                                // Долг по умолчанию отсутствует
             UpdateStateLabel();
             UpdateBalanceLabel();
+            UpdateDebtLabel();
         }
 
         // Метод для обновления текста состояния
@@ -52,6 +54,12 @@ namespace lab6
             label2.Text = "Баланс: " + balance.ToString("C");
         }
 
+        // Метод для обновления текста долга
+        private void UpdateDebtLabel()
+        {
+            label3.Text = "Долг: " + debt.ToString("C");
+        }
+
         // Открытие счета
         private void button1_Click(object sender, EventArgs e)
         {
@@ -60,6 +68,7 @@ namespace lab6
             debt = 0;
             UpdateStateLabel();
             UpdateBalanceLabel();
+            UpdateDebtLabel();
             MessageBox.Show("Счет открыт.");
             textBox1.Clear();  // Очистка поля ввода
         }
@@ -73,6 +82,7 @@ namespace lab6
             debt = 0;                                // Обнуление долга
             UpdateStateLabel();
             UpdateBalanceLabel();
+            UpdateDebtLabel();
             textBox1.Clear();  // Очистка поля ввода
         }
 
@@ -101,6 +111,7 @@ namespace lab6
                 balance += depositAmount;
                 UpdateStateLabel();
                 UpdateBalanceLabel();
+                UpdateDebtLabel();
             }
             else
             {
@@ -126,8 +137,10 @@ namespace lab6
                     balance = 0;
                     currentState = AccountState.Overdrawn;
                 }
+
                 UpdateStateLabel();
                 UpdateBalanceLabel();
+                UpdateDebtLabel();
             }
             else
             {
@@ -162,9 +175,10 @@ namespace lab6
                 {
                     if (paymentAmount >= debt)
                     {
+                        paymentAmount -= debt;
                         debt = 0;
                         currentState = AccountState.GoodAccount;
-                        balance += (paymentAmount - debt);
+                        balance += paymentAmount; // Остаток после погашения идет на баланс
                     }
                     else
                     {
@@ -172,6 +186,7 @@ namespace lab6
                     }
                     UpdateStateLabel();
                     UpdateBalanceLabel();
+                    UpdateDebtLabel();
                 }
                 else
                 {
