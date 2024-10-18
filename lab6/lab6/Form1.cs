@@ -56,6 +56,11 @@ namespace lab6
         // Закрытие счета (сброс баланса и долга)
         private void button2_Click(object sender, EventArgs e)
         {
+            if (debt > 0)
+            {
+                MessageBox.Show("Невозможно закрыть счет при наличии долга"); //Запрещает закрывать счет при наличии долга
+                return;
+            }
             MessageBox.Show("Счет закрыт.");
             currentState = AccountState.GoodAccount; // Сброс состояния на "хороший счет"
             balance = 0;                             // Обнуление баланса
@@ -84,34 +89,56 @@ namespace lab6
             textBox1.Clear();  // Очистка поля ввода
         }
 
-        // Снятие денег
+        // Обычное снятие денег
         private void button4_Click(object sender, EventArgs e)
         {
             decimal withdrawalAmount;
             if (decimal.TryParse(textBox1.Text, out withdrawalAmount) && withdrawalAmount > 0)
             {
-                if (balance >= withdrawalAmount)
+                if (debt > 0) // Если есть долг
                 {
-                    balance -= withdrawalAmount; // Списание с баланса, если средств достаточно
+                    if (withdrawalAmount >= debt)
+                    {
+                        // Снимаем с суммы долг и оставшиеся деньги снимаем с баланса
+                        withdrawalAmount -= debt;
+                        debt = 0; // Долга нет
+                        currentState = AccountState.GoodAccount; // Меняем состояние счета
+                    }
+                    else
+                    {
+                        // Уменьшаем долгг
+                        debt -= withdrawalAmount;
+                        withdrawalAmount = 0; ////
+                    }
                 }
-                else
+                
+                if (withdrawalAmount > 0)
                 {
-                    debt += (withdrawalAmount - balance); // Перерасход: добавляем разницу в долг
-                    balance = 0;                         // Обнуление баланса
-                    currentState = AccountState.Overdrawn; // Установка состояния "в долг"
+                    if (balance >= withdrawalAmount)
+                    {
+                        balance -= withdrawalAmount; 
+                    }
+                    else
+                    {
+                        debt += (withdrawalAmount - balance); 
+                        balance = 0;
+                        currentState = AccountState.Overdrawn;  //Обновление состояния на перерасход
+
+                    }
                 }
 
-                UpdateStateLabel();    // Обновление состояния счета
-                UpdateBalanceLabel();  // Обновление баланса
-                UpdateDebtLabel();     // Обновление долга
+                UpdateStateLabel();
+                UpdateBalanceLabel();
+                UpdateDebtLabel(); // Обновляем отображение долга
             }
             else
             {
-                MessageBox.Show("Введите корректную сумму для снятия."); // Валидация ввода
+                MessageBox.Show("Введите корректную сумму для снятия.");
             }
 
             textBox1.Clear();  // Очистка поля ввода
         }
+
 
         // Погашение долга
         private void button6_Click(object sender, EventArgs e)
