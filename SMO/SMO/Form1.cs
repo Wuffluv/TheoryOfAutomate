@@ -62,12 +62,21 @@ namespace SMO
         // Обработчик кнопки для добавления клиента
         private void button1_Click(object sender, EventArgs e)
         {
+            
+            bool isQueueUnavailable = random.Next(100) < 20;
+
+            // Если очередь недоступна, клиент отбрасывается
+            if (isQueueUnavailable)
+            {
+                discardedClients.Add(clientId);
+                listBoxDiscarded.Items.Add($"{clientId++} (Очередь недоступна)");
+            }
             // Проверка, переполнена ли очередь
-            if (queue.Count >= 6)
+            else if (queue.Count >= 6)
             {
                 // Добавление клиента в список отброшенных, если очередь переполнена
                 discardedClients.Add(clientId);
-                listBoxDiscarded.Items.Add(clientId++);
+                listBoxDiscarded.Items.Add($"{clientId++} (Очередь переполнена)");
             }
             else
             {
@@ -76,6 +85,7 @@ namespace SMO
             }
             DrawStateMachine();
         }
+
 
         // Обработчик события таймера для обновления графа
         private void Timer_Tick(object sender, EventArgs e)
