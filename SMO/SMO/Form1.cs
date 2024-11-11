@@ -46,7 +46,7 @@ namespace SMO
         // Метод для инициализации позиций состояний на графе
         private void InitializeStatePositions()
         {
-            // Устанавливаем уникальные позиции для каждого состояния
+            // позиции для каждого состояния
             statePositions = new Dictionary<string, Point>
             {
                 { "Start", new Point(50, 250) },
@@ -98,20 +98,20 @@ namespace SMO
         // Метод для обработки клиента через конечный автомат
         private void ProcessClient()
         {
-            // Логика смены состояний конечного автомата
+            // смен а  состояний конечного автомата
             switch (currentClientState)
             {
                 case 0:
-                    // Переход из начального состояния "Start" в одно из состояний
+                    // Переход из начального состояния Start в одно из состояний
                     currentClientState = GetNextState(new[] { 1, 2, 3, 4 });
                     break;
                 case 1:
-                    // Переход от состояния "Processor1" в "Processor2" или "Queue"
+                    // Переход от состояния Processor1 в Processor2 или Queue
                     currentClientState = GetNextState(new[] { 2, 5 });
                     break;
                 case 2:
                 case 5:
-                    // Завершение обработки и переход в "End"
+                    // Завершение обработки и переход в End
                     currentClientState = 6;
                     break;
                 case 3:
@@ -136,6 +136,14 @@ namespace SMO
         {
             return possibleStates[random.Next(possibleStates.Length)];
         }
+
+
+
+
+
+        /// <summary>
+        /// Далее ниже отрисовка графа
+        /// </summary>
 
         // Метод для отрисовки всего графа состояний и переходов
         private void DrawStateMachine()
