@@ -1,4 +1,8 @@
+int bar (){
+	return 1;
 
-asdasd
-asd
-asd
+
+
+
+} ;
+
