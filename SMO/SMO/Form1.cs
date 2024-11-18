@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -98,6 +99,12 @@ namespace SMO
             Bitmap bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height); // Создаем изображение для графа
             Graphics g = Graphics.FromImage(bmp);
 
+            // Рисуем переходы (стрелки)
+            DrawTransition(g, new Point(70, 250), new Point(200, 120)); // Из "Очередь" в "Процессор 1"
+            DrawTransition(g, new Point(70, 250), new Point(500, 120)); // Из "Очередь" в "Процессор 2"
+            DrawTransition(g, new Point(220, 120), new Point(650, 270)); // Из "Процессор 1" в "Завершено"
+            DrawTransition(g, new Point(520, 120), new Point(650, 270)); // Из "Процессор 2" в "Завершено"
+
             // Рисуем места (places) на графе
             DrawPlace(g, "Очередь", "Очередь", new Point(50, 250));
             DrawPlace(g, "Процессор1", "Процессор 1", new Point(200, 100));
@@ -106,6 +113,20 @@ namespace SMO
 
             pictureBox1.Image = bmp; // Отображаем граф на форме
         }
+
+        private void DrawTransition(Graphics g, Point start, Point end)
+        {
+            // Рисуем линию
+            Pen pen = new Pen(Color.Black, 2);
+            AdjustableArrowCap arrow = new AdjustableArrowCap(5, 5);
+            pen.CustomEndCap = arrow;
+            g.DrawLine(pen, start, end);
+
+            // Рисуем текст для перехода (необязательно)
+            Point midPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
+            g.DrawString("→", this.Font, Brushes.Black, midPoint);
+        }
+
 
         private void DrawPlace(Graphics g, string placeName, string label, Point position)
         {
