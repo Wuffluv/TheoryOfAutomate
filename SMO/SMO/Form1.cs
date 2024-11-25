@@ -56,7 +56,7 @@ namespace SMO
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // Добавляем клиента (токен) в место "Очередь"
+            // Добавляем клиента (фишка) в место "Очередь"
             if (petriNet.GetTokensCount("Очередь") < 6) // Ограничиваем длину очереди
             {
                 petriNet.AddToken("Очередь", clientId++);
@@ -80,7 +80,7 @@ namespace SMO
             // Активируем переходы в сети Петри
             petriNet.FireTransitions();
 
-            // Перемещаем обработанные токены в список обработанных
+            // Перемещаем обработанные фишки в список обработанных
             var completedTokens = petriNet.GetTokensFromPlace("Завершено");
             foreach (var token in completedTokens)
             {
@@ -145,7 +145,7 @@ namespace SMO
     public class Place
     {
         public string Name { get; } // Название места
-        private List<int> tokens; // Список токенов в месте
+        private List<int> tokens; // Список фишек в месте
 
         public Place(string name)
         {
@@ -153,23 +153,23 @@ namespace SMO
             tokens = new List<int>(); // Инициализируем список токенов
         }
 
-        // Добавляем токен в место
+        // Добавляем фишку в место
         public void AddToken(int tokenId) => tokens.Add(tokenId);
 
-        // Убираем токен из места
+        // Убираем фишку из места
         public int RemoveToken()
         {
             if (tokens.Count > 0)
             {
                 int token = tokens[0];
-                tokens.RemoveAt(0); // Удаляем первый токен
+                tokens.RemoveAt(0); // Удаляем первую фишку
                 return token;
             }
-            return -1; // Если токенов нет, возвращаем -1
+            return -1; // Если фишек нет, возвращаем -1
         }
 
-        public int TokensCount => tokens.Count; // Количество токенов в месте
-        public List<int> Tokens => new List<int>(tokens); // Копия списка токенов
+        public int TokensCount => tokens.Count; // Количество фишек в месте
+        public List<int> Tokens => new List<int>(tokens); // Копия списка фишек
     }
 
     // Класс Transition - Переход в сети Петри
@@ -201,7 +201,7 @@ namespace SMO
                     {
                         foreach (var output in outputPlaces)
                         {
-                            output.AddToken(token); // Перемещаем токен в выходное место
+                            output.AddToken(token); // Перемещаем фишку в выходное место
                         }
                     }
                 }
@@ -209,7 +209,7 @@ namespace SMO
         }
     }
 
-    // Класс PetriNet - Управляет всей сетью Петри
+    // Управляем всей сетью Петри
     public class PetriNet
     {
         private Dictionary<string, Place> places; // Список мест
@@ -230,11 +230,11 @@ namespace SMO
             transitions.Add(new Transition(name, inputs, outputs)); // Добавляем переход
         }
 
-        public void AddToken(string placeName, int tokenId) => places[placeName].AddToken(tokenId); // Добавляем токен в место
+        public void AddToken(string placeName, int tokenId) => places[placeName].AddToken(tokenId); // Добавляем фишку в место
 
-        public int GetTokensCount(string placeName) => places[placeName].TokensCount; // Получаем количество токенов в месте
+        public int GetTokensCount(string placeName) => places[placeName].TokensCount; // Получаем количество фишек в месте
 
-        public List<int> GetTokensFromPlace(string placeName) => places[placeName].Tokens; // Получаем список токенов из места
+        public List<int> GetTokensFromPlace(string placeName) => places[placeName].Tokens; // Получаем список фишек из места
 
         // Получаем список активных переходов
         public List<Transition> GetEnabledTransitions() => transitions.Where(t => t.IsEnabled()).ToList();

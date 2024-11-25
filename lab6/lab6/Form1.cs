@@ -1,205 +1,203 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace lab6
 {
     public partial class Form1 : Form
     {
-        // Определение состояний счета
-        enum AccountState
+        // Модель сети Петри
+        private class PetriNet
         {
-            GoodAccount,  // Счет хороший (нет долгов)
-            Overdrawn     // Превышены расходы по счету (есть долг)
+            public Dictionary<string, int> Places { get; set; } = new Dictionary<string, int>();
+            public Dictionary<string, Func<bool>> Transitions { get; set; } = new Dictionary<string, Func<bool>>();
+
+            // Метод для срабатывания перехода
+            public bool Fire(string transitionName)
+            {
+                if (Transitions.ContainsKey(transitionName) && Transitions[transitionName]())
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            // Метод добавления фишек
+            public void AddTokens(string place, int count)
+            {
+                if (Places.ContainsKey(place))
+                {
+                    Places[place] += count;
+                }
+            }
+
+            // Метод удаления фишек
+            public void RemoveTokens(string place, int count)
+            {
+                if (Places.ContainsKey(place) && Places[place] >= count)
+                {
+                    Places[place] -= count;
+                }
+            }
         }
 
-        private AccountState currentState; // Текущее состояние счета
-        private decimal balance;           // Текущий баланс счета
-        private decimal debt;              // Текущий долг по счету
+        private PetriNet accountNet = new PetriNet();
+        private decimal balance;
+        private decimal debt;
 
         public Form1()
         {
             InitializeComponent();
-            currentState = AccountState.GoodAccount; // Начальное состояние счета — хороший счет
-            balance = 0;                             // Начальный баланс — 0
-            debt = 0;                                // Долг отсутствует при старте
-            UpdateStateLabel();  // Обновление метки состояния счета
-            UpdateBalanceLabel(); // Обновление метки баланса счета
-            UpdateDebtLabel();    // Обновление метки долга
-        }
 
-        // Метод для обновления отображения состояния счета
-        private void UpdateStateLabel()
-        {
-            switch (currentState)
+            // Инициализация сети Петри
+            accountNet.Places["GoodAccount"] = 1;  // Начальное состояние — хороший счет (есть одна фишка)
+            accountNet.Places["Overdrawn"] = 0;   // Нет долгов (нет фишек)
+
+            // Определение переходов
+            accountNet.Transitions["Deposit"] = () =>
             {
-                case AccountState.GoodAccount:
-                    label1.Text = "Счет Хороший"; // Вывод состояния "Счет хороший"
-                    break;
-                case AccountState.Overdrawn:
-                    label1.Text = "Превышены Расходы по Счету"; // Вывод состояния "Счет в долге"
-                    break;
-            }
-        }
+                if (accountNet.Places["Overdrawn"] > 0)
+                {
+                    accountNet.RemoveTokens("Overdrawn", 1); // Убираем фишку из места "Overdrawn"
+                }
+                accountNet.AddTokens("GoodAccount", 1); // Добавляем фишку в место "GoodAccount"
+                return true;
+            };
 
-        // Метод для обновления отображения баланса счета
-        private void UpdateBalanceLabel()
-        {
-            label2.Text = "Баланс: " + balance.ToString("C"); // Вывод баланса в формате валюты
-        }
-
-        // Метод для обновления отображения долга
-        private void UpdateDebtLabel()
-        {
-            label3.Text = "Долг: " + debt.ToString("C"); // Вывод долга в формате валюты
-        }
-
-        // Закрытие счета (сброс баланса и долга)
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (debt > 0)
+            accountNet.Transitions["Withdraw"] = () =>
             {
-                MessageBox.Show("Невозможно закрыть счет при наличии долга"); //Запрещает закрывать счет при наличии долга
-                return;
-            }
-            MessageBox.Show("Счет закрыт.");
-            currentState = AccountState.GoodAccount; // Сброс состояния на "хороший счет"
-            balance = 0;                             // Обнуление баланса
-            debt = 0;                                // Обнуление долга
-            UpdateStateLabel();  // Обновление метки состояния счета
-            UpdateBalanceLabel(); // Обновление метки баланса
-            UpdateDebtLabel();    // Обновление метки долга
-            textBox1.Clear();     // Очистка поля ввода
+                if (balance > 0 || debt > 0)
+                {
+                    if (accountNet.Places["GoodAccount"] > 0)
+                    {
+                        accountNet.RemoveTokens("GoodAccount", 1); // Убираем фишку из места "GoodAccount"
+                    }
+                    accountNet.AddTokens("Overdrawn", 1); // Добавляем фишку в место "Overdrawn"
+                    return true;
+                }
+                return false;
+            };
+
+            accountNet.Transitions["RepayDebt"] = () =>
+            {
+                if (debt > 0 && balance >= debt)
+                {
+                    balance -= debt; // Погашаем долг с баланса
+                    debt = 0;        // Обнуляем долг
+                    accountNet.RemoveTokens("Overdrawn", 1); // Убираем фишку из места "Overdrawn"
+                    accountNet.AddTokens("GoodAccount", 1);  // Добавляем фишку в место "GoodAccount"
+                    return true;
+                }
+                return false;
+            };
+
+            UpdateUI(); // Обновляем пользовательский интерфейс
         }
 
-        // Вклад (внесение денег на баланс)
+        // Метод для обновления пользовательского интерфейса
+        private void UpdateUI()
+        {
+            // Обновление состояния
+            if (accountNet.Places["GoodAccount"] > 0)
+            {
+                label1.Text = "Счет Хороший";
+            }
+            else if (accountNet.Places["Overdrawn"] > 0)
+            {
+                label1.Text = "Превышены Расходы по Счету";
+            }
+
+            // Обновление баланса и долга
+            label2.Text = "Баланс: " + balance.ToString("C");
+            label3.Text = "Долг: " + debt.ToString("C");
+        }
+
+        // Обработка события кнопки "Вклад"
         private void button3_Click(object sender, EventArgs e)
         {
-            decimal depositAmount;
-            if (decimal.TryParse(textBox1.Text, out depositAmount) && depositAmount > 0)
+            if (decimal.TryParse(textBox1.Text, out var depositAmount) && depositAmount > 0)
             {
-                balance += depositAmount; // Увеличение баланса на сумму вклада
-                UpdateStateLabel();       // Обновление состояния счета (если было изменено)
-                UpdateBalanceLabel();     // Обновление отображения баланса
+                balance += depositAmount; // Увеличиваем баланс на сумму вклада
+                accountNet.Fire("Deposit"); // Переход "Deposit"
+                UpdateUI(); // Обновляем пользовательский интерфейс
             }
             else
             {
-                MessageBox.Show("Введите корректную сумму для вклада."); // Проверка на корректность ввода
+                MessageBox.Show("Введите корректную сумму для вклада.");
             }
-
-            textBox1.Clear();  // Очистка поля ввода
+            textBox1.Clear(); // Очистка поля ввода
         }
 
-        // Обычное снятие денег
+        // Обработка события кнопки "Снятие"
         private void button4_Click(object sender, EventArgs e)
         {
-            decimal withdrawalAmount;
-            if (decimal.TryParse(textBox1.Text, out withdrawalAmount) && withdrawalAmount > 0)
+            if (decimal.TryParse(textBox1.Text, out var withdrawalAmount) && withdrawalAmount > 0)
             {
-                if (debt > 0) // Если есть долг
+                if (balance >= withdrawalAmount)
                 {
-                    if (withdrawalAmount >= debt)
-                    {
-                        // Снимаем с суммы долг и оставшиеся деньги снимаем с баланса
-                        withdrawalAmount -= debt;
-                        debt = 0; // Долга нет
-                        currentState = AccountState.GoodAccount; // Меняем состояние счета
-                    }
-                    else
-                    {
-                        // Уменьшаем долгг
-                        debt -= withdrawalAmount;
-                        withdrawalAmount = 0; ////
-                    }
+                    balance -= withdrawalAmount; // Снимаем деньги с баланса
                 }
-                
-                if (withdrawalAmount > 0)
+                else
                 {
-                    if (balance >= withdrawalAmount)
-                    {
-                        balance -= withdrawalAmount; 
-                    }
-                    else
-                    {
-                        debt += (withdrawalAmount - balance); 
-                        balance = 0;
-                        currentState = AccountState.Overdrawn;  //Обновление состояния на перерасход
-
-                    }
+                    debt += (withdrawalAmount - balance); // Увеличиваем долг на разницу
+                    balance = 0; // Обнуляем баланс
                 }
-
-                UpdateStateLabel();
-                UpdateBalanceLabel();
-                UpdateDebtLabel(); // Обновляем отображение долга
+                accountNet.Fire("Withdraw"); // Переход "Withdraw"
+                UpdateUI(); // Обновляем пользовательский интерфейс
             }
             else
             {
                 MessageBox.Show("Введите корректную сумму для снятия.");
             }
-
-            textBox1.Clear();  // Очистка поля ввода
+            textBox1.Clear(); // Очистка поля ввода
         }
 
-
-        // Погашение долга
+        // Обработка события кнопки "Погашение долга"
         private void button6_Click(object sender, EventArgs e)
         {
-            if (currentState == AccountState.Overdrawn) // Проверяем, есть ли долг
+            if (accountNet.Fire("RepayDebt")) // Переход "RepayDebt"
             {
-                // Если на балансе достаточно средств для погашения долга
-                if (balance >= debt)
-                {
-                    balance -= debt;  // Списание долга с баланса
-                    debt = 0;         // Обнуление долга
-                    currentState = AccountState.GoodAccount; // Изменение состояния на "хороший счет"
-                    MessageBox.Show("Долг успешно погашен с баланса.");
-                }
-                else
-                {
-                    MessageBox.Show("Недостаточно средств на балансе для погашения долга.");
-                }
+                MessageBox.Show("Долг успешно погашен.");
             }
             else
             {
-                MessageBox.Show("У вас нет долга."); // Сообщение, если долга нет
+                MessageBox.Show("Недостаточно средств для погашения долга.");
             }
-
-            UpdateStateLabel();   // Обновление состояния счета
-            UpdateBalanceLabel(); // Обновление баланса
-            UpdateDebtLabel();    // Обновление долга
-            textBox1.Clear();     // Очистка поля ввода
+            UpdateUI(); // Обновляем пользовательский интерфейс
+            textBox1.Clear(); // Очистка поля ввода
         }
 
-        // Разрешенное снятие денег при перерасходе
+        // Обработка события кнопки "Закрытие счета"
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (debt > 0)
+            {
+                MessageBox.Show("Невозможно закрыть счет при наличии долга.");
+                return;
+            }
+            balance = 0; // Обнуляем баланс
+            accountNet.Places["GoodAccount"] = 0; // Убираем фишки из места "GoodAccount"
+            MessageBox.Show("Счет успешно закрыт.");
+            UpdateUI(); // Обновляем пользовательский интерфейс
+            textBox1.Clear(); // Очистка поля ввода
+        }
+
+        // Обработка события кнопки "Разрешенное снятие при долге"
         private void button5_Click(object sender, EventArgs e)
         {
-            if (currentState == AccountState.Overdrawn) // Проверяем, находится ли счет в долге
+            if (accountNet.Places["Overdrawn"] > 0) // Проверяем, находится ли счет в состоянии перерасхода
             {
-                decimal allowedWithdrawal = 500; // Фиксированная сумма для разрешенного снятия
-
-                if (balance >= allowedWithdrawal)
-                {
-                    balance -= allowedWithdrawal; // Списание с баланса разрешенной суммы
-                    MessageBox.Show($"Снятие разрешено. Вы сняли {allowedWithdrawal.ToString("C")}.");
-                }
-                else if (balance > 0)  // Если на балансе меньше фиксированной суммы
-                {
-                    allowedWithdrawal = balance; // Снимаем оставшиеся средства
-                    balance = 0;                  // Обнуляем баланс
-                    MessageBox.Show($"Снятие разрешено. Вы сняли оставшиеся {allowedWithdrawal.ToString("C")}.");
-                }
-                else
-                {
-                    MessageBox.Show("У вас нет средств на счете для разрешенного снятия.");
-                }
-
-                UpdateBalanceLabel(); // Обновляем баланс на интерфейсе
+                decimal allowedWithdrawal = 100; // Разрешенная сумма для снятия
+                balance -= allowedWithdrawal; // Уменьшаем баланс на разрешенную сумму
+                debt += allowedWithdrawal; // Увеличиваем долг
+                MessageBox.Show($"Разрешенное снятие: {allowedWithdrawal.ToString("C")}.");
+                UpdateUI(); // Обновляем пользовательский интерфейс
             }
             else
             {
-                MessageBox.Show("Счет в порядке, разрешенное снятие не требуется.");
+                MessageBox.Show("Разрешенное снятие возможно только при перерасходе.");
             }
-
-            textBox1.Clear();  // Очистка поля ввода
+            textBox1.Clear(); // Очистка поля ввода
         }
     }
 }
