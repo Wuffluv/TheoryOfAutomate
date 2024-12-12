@@ -108,26 +108,26 @@ def display_automaton_and_search():
 
 # Интерфейс на Tkinter
 root = tk.Tk()
-root.title("DFA for Substring Search")  # Название окна
+root.title("DFA для поиска подстроки")  # Название окна
 root.geometry("500x700")  # Размер окна
 root.resizable(False, False)  # Запрет изменения размеров окна
 
 # Поле ввода текста
 frame_text = tk.Frame(root)
 frame_text.pack(pady=10)
-tk.Label(frame_text, text="Enter the text:").pack(anchor="w", padx=5)
+tk.Label(frame_text, text="Введите текст:").pack(anchor="w", padx=5)
 entry_text = tk.Text(frame_text, height=10, width=60)
 entry_text.pack(padx=5, pady=5)
 
 # Поле ввода шаблона
 frame_pattern = tk.Frame(root)
 frame_pattern.pack(pady=10)
-tk.Label(frame_pattern, text="Enter the pattern:").pack(anchor="w", padx=5)
+tk.Label(frame_pattern, text="Введите подстроку:").pack(anchor="w", padx=5)
 entry_pattern = tk.Entry(frame_pattern, width=40)
 entry_pattern.pack(padx=5, pady=5)
 
 # Кнопка для запуска поиска
-button_build = tk.Button(root, text="Build DFA and Search", command=display_automaton_and_search)
+button_build = tk.Button(root, text="Построить DFA и поиск", command=display_automaton_and_search)
 button_build.pack(pady=10)
 
 # Таблица DFA
