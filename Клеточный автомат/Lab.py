@@ -10,7 +10,7 @@ class MazeGenerator:
         self.cell_size = cell_size
         self.grid = [[1 for _ in range(width)] for _ in range(height)]
 
-        # Создаем Canvas для отображения лабиринта
+
         self.canvas = tk.Canvas(master, width=width * cell_size, height=height * cell_size, bg="white")
         self.canvas.pack()
 
